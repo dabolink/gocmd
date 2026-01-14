@@ -17,10 +17,6 @@ type CommandInput interface {
 	GetCommandName() string
 }
 
-type CommandProvider[TInput CommandInput] interface {
-	GetCommand(TInput) (CommandRunnable[TInput], error)
-}
-
 type CommandInfo struct {
 	IsUserVisible bool
 	Name          string

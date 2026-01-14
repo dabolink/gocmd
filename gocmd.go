@@ -8,25 +8,27 @@ import (
 	"github.com/dabolink/gocmd/store"
 )
 
-var _ Interface[command.CommandInput, any] = &Client[command.CommandInput, any]{}
+type Runner[T any] = runner.Runner[T]
+
+var _ Interface[command.CommandInput, any] = (*Client[command.CommandInput, any])(nil)
 
 type Interface[TInput command.CommandInput, TProvider any] interface {
 	Run(context.Context, TInput) error
-	AddCommand(command.CommandData[TInput, TProvider])
+	AddCommands(...command.CommandData[TInput, TProvider])
 	ListCommands() []command.CommandInfo
 	Wait()
 }
 
 type Client[TInput command.CommandInput, TProvider any] struct {
 	commandStore *store.CommandStore[TInput, TProvider]
-	runner       *runner.Runner[TProvider]
+	runner       Runner[TProvider]
 }
 
-func (cli *Client[TInput, TProvider]) ListCommands() []command.CommandInfo {
+func (cli *Client[_, _]) ListCommands() []command.CommandInfo {
 	return cli.commandStore.ListCommands()
 }
 
-func (cli *Client[TInput, TProvider]) Run(ctx context.Context, in TInput) error {
+func (cli *Client[TInput, _]) Run(ctx context.Context, in TInput) error {
 	cmd, err := cli.commandStore.GetCommand(in)
 	if err != nil {
 		return err
@@ -34,8 +36,8 @@ func (cli *Client[TInput, TProvider]) Run(ctx context.Context, in TInput) error 
 	return cli.runner.Run(ctx, cmd)
 }
 
-func (cli *Client[TInput, TProvider]) AddCommand(data command.CommandData[TInput, TProvider]) {
-	cli.commandStore.Add(data)
+func (cli *Client[TInput, TProvider]) AddCommands(data ...command.CommandData[TInput, TProvider]) {
+	cli.commandStore.Add(data...)
 }
 
 func (cli *Client[_, _]) Wait() {

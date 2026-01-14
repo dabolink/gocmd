@@ -13,12 +13,17 @@ var _ Interface[command.CommandInput, any] = &Client[command.CommandInput, any]{
 type Interface[TInput command.CommandInput, TProvider any] interface {
 	Run(context.Context, TInput) error
 	AddCommand(command.CommandData[TInput, TProvider])
+	ListCommands() []command.CommandInfo
 	Wait()
 }
 
 type Client[TInput command.CommandInput, TProvider any] struct {
 	commandStore *store.CommandStore[TInput, TProvider]
 	runner       *runner.Runner[TProvider]
+}
+
+func (cli *Client[TInput, TProvider]) ListCommands() []command.CommandInfo {
+	return cli.commandStore.ListCommands()
 }
 
 func (cli *Client[TInput, TProvider]) Run(ctx context.Context, in TInput) error {

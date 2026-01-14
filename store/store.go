@@ -41,14 +41,12 @@ type CommandStore[TInput command.CommandInput, TProvider any] struct {
 	aliases  map[string]string
 }
 
-func (c *CommandStore[_, _]) List() []string {
-	keys := make([]string, 0, len(c.commands))
-	for _, v := range c.commands {
-		if v.GetInfo().IsUserVisible {
-			keys = append(keys, v.GetInfo().Name)
-		}
+func (c *CommandStore[TInput, TProvider]) ListCommands() []command.CommandInfo {
+	commands := make([]command.CommandInfo, 0, len(c.commands))
+	for _, val := range c.commands {
+		commands = append(commands, val.GetInfo())
 	}
-	return keys
+	return commands
 }
 
 func (s *CommandStore[_, _]) GetInfo(cmd string) (command.CommandInfo, error) {

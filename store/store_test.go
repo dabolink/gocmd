@@ -84,24 +84,24 @@ func TestCommandStore_Add(t *testing.T) {
 	}
 }
 
-func TestCommandStore_List(t *testing.T) {
+func TestCommandStore_ListCommands(t *testing.T) {
 	type fields struct {
 		commands map[string]command.CommandData[*SimpleCommandInput, *SimpleCommandData]
 	}
 	tests := []struct {
 		name   string
 		fields fields
-		want   []string
+		want   []command.CommandInfo
 	}{
 		{
 			name: "no commands",
 			fields: fields{
 				commands: map[string]command.CommandData[*SimpleCommandInput, *SimpleCommandData]{},
 			},
-			want: []string{},
+			want: []command.CommandInfo{},
 		},
 		{
-			name: "has visible commands",
+			name: "has commands",
 			fields: fields{
 				commands: map[string]command.CommandData[*SimpleCommandInput, *SimpleCommandData]{
 					"key": &SimpleCommandData{
@@ -113,22 +113,13 @@ func TestCommandStore_List(t *testing.T) {
 					},
 				},
 			},
-			want: []string{"test"},
-		},
-		{
-			name: "has invisble commands",
-			fields: fields{
-				commands: map[string]command.CommandData[*SimpleCommandInput, *SimpleCommandData]{
-					"key": &SimpleCommandData{
-						command.CommandInfo{
-							Name:          "test",
-							IsUserVisible: false,
-							Aliases:       []string{},
-						},
-					},
+			want: []command.CommandInfo{
+				{
+					Name:          "test",
+					IsUserVisible: true,
+					Aliases:       []string{},
 				},
 			},
-			want: []string{},
 		},
 	}
 	for _, tt := range tests {
@@ -136,9 +127,19 @@ func TestCommandStore_List(t *testing.T) {
 			s := &CommandStore[*SimpleCommandInput, *SimpleCommandData]{
 				commands: tt.fields.commands,
 			}
-			if got := s.List(); !reflect.DeepEqual(got, tt.want) {
+			got := s.ListCommands()
+			if len(got) != len(tt.want) {
 				t.Errorf("CommandStore.Get() = %v, want %v", got, tt.want)
+				return
 			}
+			for i := range got {
+				g := got[i]
+				w := tt.want[i]
+				if g.Name != w.Name {
+					t.Errorf("CommandStore.Get() [%d] = %v, want %v", i, g, w)
+				}
+			}
+
 		})
 	}
 }

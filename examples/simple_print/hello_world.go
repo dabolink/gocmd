@@ -1,4 +1,4 @@
-package examples
+package main
 
 import (
 	"context"
@@ -20,7 +20,7 @@ func (in *SimpleCommandInput) GetCommandName() string {
 	return in.CommandName
 }
 
-func SimplePrintCommand() {
+func main() {
 	cmd := gocmd.MakeCommand(
 		command.CommandInfo{
 			IsUserVisible: true,
